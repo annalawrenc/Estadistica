@@ -1,4 +1,4 @@
-############################ ANALISIS ESTADISTICO - Master BI y BD  ###############################
+ ############################ ANALISIS ESTADISTICO - Master BI y BD  ###############################
 
 # Hacer uso del dataset "diamonds" que contendra el precio (entre otras variables interesantes) de unos 54.000 diamantes.
 
@@ -43,80 +43,8 @@ VeryGood<-dt [dt$cut=='Very Good',]
 Premium<-dt [dt$cut=='Premium',]
 Ideal<-dt [dt$cut=='Ideal',]
 
-Porcentajes <-c(nrow(fair)/nrow(dt),nrow(Good)/nrow(dt),nrow(VeryGood)/nrow(dt),nrow(Premium)/nrow(dt),nrow(Ideal)/nrow(dt))
+Porcentajes <-c(nrow(Fair)/nrow(dt),nrow(Good)/nrow(dt),nrow(VeryGood)/nrow(dt),nrow(Premium)/nrow(dt),nrow(Ideal)/nrow(dt))
 Porcentajes
-
-# Tambien puedo representar el reparto como porcentajes en un grafico. Para ello usare la función pie_chart
-
-
-
-# ****************************funcion para representar % del total en un grafico circular*******************************************************
-
-# *******fuente; http://stackoverflow.com/questions/26392818/r-pie-chart-with-percentage-as-labels-using-ggplot2********************************
-
-
-pie_chart <- function(df, main, labels = NULL, condition = NULL) {
-  
-  # convert the data into percentages. group by conditional variable if needed
-  df <- group_by_(df, .dots = c(condition, main)) %>%
-    summarize(counts = n()) %>%
-    mutate(perc = counts / sum(counts)) %>%
-    arrange(desc(perc)) %>%
-    mutate(label_pos = cumsum(perc) - perc / 2,
-           perc_text = paste0(round(perc * 100), "%"))
-  
-  # reorder the category factor levels to order the legend
-  df[[main]] <- factor(df[[main]], levels = unique(df[[main]]))
-  
-  # if labels haven't been specified, use what's already there
-  if (is.null(labels)) labels <- as.character(df[[main]])
-  
-  p <- ggplot(data = df, aes_string(x = factor(1), y = "perc", fill = main)) +
-    
-    # make stacked bar chart with black border
-    geom_bar(stat = "identity", color = "black", width = 1) +
-    
-    # add the percents to the interior of the chart
-    geom_text(aes(x = 1.25, y = label_pos, label = perc_text), size = 4) +
-    
-    # add the category labels to the chart
-    # increase x / play with label strings if labels aren't pretty
-    geom_text(aes(x = 1.82, y = label_pos, label = labels), size = 4) +
-    
-    # convert to polar coordinates
-    coord_polar(theta = "y") +
-    
-    # formatting
-    scale_y_continuous(breaks = NULL) +
-    scale_fill_discrete(name = "", labels = unique(labels)) +
-    theme(text = element_text(size = 22),
-          axis.ticks = element_blank(),
-          axis.text = element_blank(),
-          axis.title = element_blank())
-  
-  # facet wrap if that's happening
-  if (!is.null(condition)) p <- p + facet_wrap(condition)
-  
-  return(p)
-}
-
-#**********************************************************************************************************************************************
-
-# para utilizar la funcion pie_chart necesito las librerias ddplot2 y dplyr
-
-library(ggplot2)
-library(dplyr)
-
-pie_chart(dt, main = "cut", labels = NULL) +
-  labs(title = "porcentaje cut poblacion")
-
-# también puedo ver porcentaje de otras variables como color y clarity.
-
-pie_chart(muestra2, main = "color", labels = NULL) +
-  labs(title = "porcentaje color poblacion")
-
-pie_chart(dt, main = "clarity", labels = NULL) +
-  labs(title = "porcentaje clarity poblacion")
 
 
 # A continuación obtendre una muestra representativa con el metodo de estratificacion proporcional, manteniendo en la muestra las proporciones de reparto de la variable cut
@@ -200,8 +128,16 @@ nrow(muestra)/nrow(dt) #compruebo que el tamaño de la muestra es 10% de la pobla
 dim(muestra)/dim(dt) # otra forma de comprobar que el tamaño de la muestra es 10% de la poblacion
 
 # compruebo que el reparto de cut en la muestra es igual que el reparto de cut en la poblacion.
-pie_chart(muestra, main = "cut", labels = NULL) +
-  labs(title = "porcentaje cut muestra")
+
+Fair<-muestra [muestra$cut=='Fair',]
+Good<-muestra [muestra$cut=='Good',]
+VeryGood<-muestra [muestra$cut=='Very Good',]
+Premium<-muestra [muestra$cut=='Premium',]
+Ideal<-muestra [muestra$cut=='Ideal',]
+
+Porcentajes <-c(nrow(Fair)/nrow(dt),nrow(Good)/nrow(dt),nrow(VeryGood)/nrow(dt),nrow(Premium)/nrow(dt),nrow(Ideal)/nrow(dt))
+Porcentajes
+
 
 # Para ver si la muestra es representativa compruebo adicionalmente que las medias y los cuartiles de las variables continuas de la poblacion y de la muestra son parecidos.
 summary(dt[,c(1,5:10)])
@@ -212,11 +148,15 @@ summary(muestra[,c(1,5:10)])
 muestra2 <- stratified(dt, c("cut","color"), .1)
 
 # Observo que los repartos de ambas variables no varian en comparacion con la poblacion. 
-pie_chart(muestra2, main = "cut", labels = NULL) +
-  labs(title = "porcentaje cut muestra2")
 
-pie_chart(muestra2, main = "color", labels = NULL) +
-  labs(title = "porcentaje color muestra2")
+Fair<-muestra2 [muestra2$cut=='Fair',]
+Good<-muestra2 [muestra2$cut=='Good',]
+VeryGood<-muestra2 [muestra2$cut=='Very Good',]
+Premium<-muestra2 [muestra2$cut=='Premium',]
+Ideal<-muestra2 [muestra2$cut=='Ideal',]
+
+Porcentajes <-c(nrow(Fair)/nrow(dt),nrow(Good)/nrow(dt),nrow(VeryGood)/nrow(dt),nrow(Premium)/nrow(dt),nrow(Ideal)/nrow(dt))
+Porcentajes
 
 # Observo que al añadir la variable color como criterio de estratificación las medias y los cuartiles ajustan mejor.
 summary(dt[,c(1,5:10)])
@@ -227,15 +167,15 @@ summary(muestra2[,c(1,5:10)])
 muestra3 <- stratified(dt, c("cut","color", "clarity"), .1)
 
 # Observo que los repartos de las tres variables no varian en comparacion con la poblacion. 
-pie_chart(muestra3, main = "cut", labels = NULL) +
-  labs(title = "porcentaje cut muestra3")
 
-pie_chart(muestra3, main = "color", labels = NULL) +
-  labs(title = "porcentaje color muestra3")
+Fair<-muestra3 [muestra3$cut=='Fair',]
+Good<-muestra3 [muestra3$cut=='Good',]
+VeryGood<-muestra3 [muestra3$cut=='Very Good',]
+Premium<-muestra3 [muestra3$cut=='Premium',]
+Ideal<-muestra3 [muestra3$cut=='Ideal',]
 
-pie_chart(muestra3, main = "clarity", labels = NULL) +
-  labs(title = "porcentaje clarity muestra3")
-
+Porcentajes <-c(nrow(Fair)/nrow(dt),nrow(Good)/nrow(dt),nrow(VeryGood)/nrow(dt),nrow(Premium)/nrow(dt),nrow(Ideal)/nrow(dt))
+Porcentajes
 
 summary(dt[,c(1,5:10)])
 summary(muestra3[,c(1,5:10)]) # La aportacion de la inclusion de la tercera variable al ajuste de las medias y cuartiles es menos destacable
@@ -580,6 +520,10 @@ Relaciones entre las variables
 #----------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------- 
 
+#analisis conjunto:
+
+# variables continuas
+
 plot(dt9[,c(1,5:11)]) # veo que existe una relación entre precio y kilates, peso y precio también parece dependen de tamaño
                       # precio por quilate y peso en quilates tienen relacion positiva, mientras que precio en quilates y depth, parece negativa
 
@@ -588,87 +532,85 @@ cor(dt9[,c(1,5:11)]) # se confirman las conslusiones que se veian en los grafico
                      # como era de esperar, cuanto mas grande el diamante mayor es su peso
                      # hay una correlacion negativa entre depth y precio (o precio por quilate)
 
-# voy a calcular precio medio por quilate desglosando por colores
-library(dplyr)
-by_color <- group_by(dt9, color)
-pr_med_quil_by_color <- summarise(by_color, mean(precio_quilate))
-pr_med_quil_by_color # precio parece mayor para valores intermedios y menor en colores peor clasificados, pero no se ven diferencias llamativas entre los distintos colores
 
-sd_med_quil_by_color <- summarise(by_color, sd(precio_quilate))
-sd_med_quil_by_color # desviación tipica también es mayor para colores intermedios, pero sin grandes diferencias entre grupos, excepto J, donde desviacion es menor
-
-by_clarity <- group_by(dt9, clarity)
-pr_med_quil_by_clarity <- summarise(by_clarity, mean(precio_quilate))
-pr_med_quil_by_clarity  # precio medio or quilate es mejor cuanto mejor claridad. Los diamantes con peor claridad muestran precio medio mas bajo. 
-
-sd_med_quil_by_clarity <- summarise(by_clarity, sd(precio_quilate))
-sd_med_quil_by_clarity  # desviación tipica de precio por quilate tambien crece en cuanto mejora la claridad
-
-
-boxplot(dt9$precio_quilate~dt9$color) # observamos que cuanto mejor el color, mas outliers en precio por quilate - mas precios muy altos
-boxplot(dt9$precio_quilate~dt9$clarity) # el patron en cuanto a claridad es parecido: cuanto mejor la claridad, mas outliers en precio por quilate - mas observaciones con precio muy alto
-
-
+# variables categoricas
 
 library(ggplot2)
-q<- ggplot(dt9, aes( x=carat, y= price)) 
-q + geom_point(aes(color=color)) # observamos que el precio de diamante depende del peso con una pendiente distinta en funcion del color
+h <- ggplot(dt9, aes(color, clarity)) 
+h + geom_jitter(aes(color=cut)) 
+# hay muchos diamantes de color y clarity intermedio y pocos de claridad muy buena y muy mala, en cuanto a color la concentracion es menor
+# los menos frecuentes son diamantes de fair cut, estos diamantes son de claridad muy buena
+# predomina claridad intermedia,para claridades peor clasificadas tambien empeora el cut
+# hay muchos diamantes de color y clarity intermedio y pocos de claridad muy buena y muy mala, en cuanto a color la concentracion es menor
 
-                  
+m <- ggplot(dt9, aes(color, clarity))
+m + geom_tile(aes(fill = cut)) 
+# los diamantes de claridad y color superior suelen tenet cut ideal, very good o premium
+# fair cut prevalece solamente en caso de diamantes con corte y color inferiores 
+
+
+
+# analisis de precio
+
 # voy a investigar el ascenso de la densidad de precio alrededor del valor de 5000 observado anteriormente 
 a <- ggplot(dt9, aes(price))
 a + geom_density(kernel = "gaussian")
-                    
-                    
+
+
 a <- ggplot(dt9, aes(price))
 a + geom_density(aes(color=color)) # vemos que los precios se concentran alrededor de valores bajos y la concentracion es mayor para colores clasificados como mejor
-                                   # también vemos que el ascenso en el valor cercano a 5000 se corresponde con lo diamantes de color H-J.
-                    
-a <- ggplot(dt9, aes(precio_quilate)) 
-a + geom_density(aes(color=color)) # el precio por quilate tiene patron menos definido en cuanto a color 
+# también vemos que el ascenso en el valor cercano a 5000 se corresponde con lo diamantes de color H-J.
+
+a <- ggplot(dt9, aes(price))
+a + geom_density(aes(color=cut))# observamos que diamantes de fair cut tienen menos concentracion alrededor de la media pero tambien cola algo mas corta - menos valores extremos 
 
 
-a <- ggplot(dt9, aes(precio_quilate))
-a + geom_density(aes(color=clarity)) # el precio por quilate tampoco tiene patron muy definido en cuanto a clarity
-                              
-                    
-g <- ggplot(dt9, aes(clarity, carat)) 
-g + geom_boxplot(aes(color=color)) # observamos que los diamantes de mejor claridad son en medio mas pequeños, aunque con mas dispersion y outliers en cuanto a peso
-                                   # dentro de la misma categoria de claridad, los diamantes de peor color suelen ser mas grandes
-                                   # conclusion: en media, cuanto mas grande el diamante peor color y claridad, aunque hay bastantes exepciones entre los diamantes grandes              
-                    
 
+# análisis del precio y peso
+
+q<- ggplot(dt9, aes( x=carat, y= price)) 
+q + geom_point(aes(color=color)) # observamos que el precio de diamante depende del peso con una pendiente distinta en funcion del color
+
+q<- ggplot(dt9, aes( x=carat, y= price)) 
+q + geom_point(aes(color=clarity))  # observamos que el precio de diamante depende del peso con una pendiente distinta en funcion de la claridad
+
+
+
+
+# análisis del precio y tamaño
+
+q<- ggplot(dt9, aes( x=size, y= price)) 
+q + geom_point(aes(color=color)) # observamos que el precio de diamante depende del tamaño con una pendiente distinta en funcion del color
+
+q<- ggplot(dt9, aes( x=size, y= price)) 
+q + geom_point(aes(color=clarity)) # observamos que el precio de diamante depende del tamaño con una pendiente distinta en funcion de la claridad
+
+
+
+# análisis de tamaño y peso
+
+f <- ggplot(dt9, aes(carat, size))
+f + geom_point(aes(color=clarity)) # la relacion entre el peso en quilates y el tamao parece lineal
+
+
+
+# para aislar el efecto que tiene el tamaño/peso sobre el precio de los diamantes analizare la relacion de las determinadas caractaristicas con el rpecio por quilate
+
+
+# análisis de precio por quilate segun el color, claridad y cut
 
 m <- ggplot(dt9, aes(color, clarity))                   
 m + geom_raster(aes(fill = precio_quilate), hjust=0.5,  vjust=0.5, interpolate=FALSE) 
 # obsevamos que el precio por quilate asciende en cuanto mejora el color y claridad
 # este patron se observa para los diamantes catagorizados muy bien o muy mal y destaca mejos para los colores y claridad intermedios
-                 
- 
-h <- ggplot(dt9, aes(color, clarity)) 
-h + geom_jitter(aes(color=cut)) 
-#observamos que hay muchos diamantes de corte y color bastente buenos
-#los menos frecuentes son diamantes de fair cut, estos diamantes son de claridad muy buena
-# predomina claridad intermedia y parece 
 
 
-m <- ggplot(dt9, aes(color, clarity))
-m + geom_tile(aes(fill = cut)) 
-# los diamantes de claridad y color superior suelen tenet cut ideal, very good o premium
-# para claridades peor clasificadas tambien empeora el cut
-# hay muchos diamantes de color y clarity intermedio y pocos de claridad muy buena y muy mala, en cuanto a color la concentracion es menor
-
-                    
-f <- ggplot(dt9, aes(carat, size))
-f + geom_point(aes(color=clarity)) # la relacion entre el peso en quilates y el tamao parece lineal
- 
-                    
 f <- ggplot(dt9, aes(carat, precio_quilate))
 f + geom_point(aes(color=clarity)) 
 # se puede observar una relacion lineal creciente entre el peso en quilates y el precio por quilate
 # la pendiente de la recta parece estar en relacion con clarity y es mayor en cuanto la claridad mejora 
-                    
- 
+
+
 f <- ggplot(dt9, aes(carat, precio_quilate))
 f + geom_point(aes(color=color))
 # adicionalmente, la pendiente de la recta que relaciona el precio por quilate con el peso es mayor en cuanto mejora el color del diamante
@@ -678,8 +620,119 @@ f <- ggplot(dt9, aes(carat, precio_quilate))
 f + geom_point(aes(color=cut))
 # en caso de variable cut no se observa dependencia de la pendiente de la categoria cut distintas de fair
 # precio por quilate de los diamantes con fair cut es mas bajo y la pendiente de la recta en mas pequeña tambien
+
+
+
+
+# análisis de precio por quilate segun el color
+
+boxplot(dt9$precio_quilate~dt9$color) # observamos que cuanto mejor el color, mas outliers en precio por quilate - mas precios muy altos
+
+a <- ggplot(dt9, aes(precio_quilate)) 
+a + geom_density(aes(color=color)) # el precio por quilate difiere segun el color
+
+library(dplyr)
+by_color <- group_by(dt9, color)
+pr_med_quil_by_color <- summarise(by_color, mean(precio_quilate))
+pr_med_quil_by_color # precio por quilate parece mayor para valores intermedios y menor en colores peor clasificados
+
+.anovacolor<-aov(dt9$precio_quilate~dt9$color)
+summary(.anovacolor)
+
+# Df    Sum Sq   Mean Sq F value Pr(>F)    
+# dt9$color       6 1.827e+09 304523989   80.82 <2e-16 ***
+#   Residuals   51632 1.945e+11   3767791    
+
+# En un análisis anova se confirma influencia fuerte del color del diamante sobre el precio 
+# De todas formas el análisi anova se debe realizar para muestras con distibusion normal y con varianzas guales, por ello voy a comprobar si las varianzas de precio por quilates son iguales en grupos de cada color
+
+sd_med_quil_by_color <- summarise(by_color, sd9(precio_quilate))
+sd_med_quil_by_color # desviación tipica también es mayor para colores intermedios, pero sin grandes diferencias entre grupos, exceptogrupos H- J, donde desviacion es menor
+
+library(lawstat)
+levene.test(dt9$precio_quilate, group=dt9$color) # test para comprobas si varianzas son iguales
+
+# modified robust Brown-Forsythe Levene-type test based on the absolute deviations from the median
+
+# data:  dt9$precio_quilate
+# Test Statistic = 76.724, p-value < 2.2e-16
+
+# bajo nivel de confianza de 95% rechazo la hipotesis Ho de varianzas iguales. Po ello voy a tener que usar Kruskal Wallis test para comparar muestras por colores.
+
+kruskal.test(precio_quilate ~ color, data = dt9)
+
+#Kruskal-Wallis rank sum test
+
+#data:  precio_quilate by color
+#Kruskal-Wallis chi-squared = 227.49, df = 6, p-value < 2.2e-16
+
+# bajo nivel de confianza 0.95 rechazo la hipotesis de igualdad de las muestras. Los presios por quilate difieren segun el color. 
+
+
+# análisis de precio por quilate segun el claridad
+
+a <- ggplot(dt9, aes(precio_quilate))
+a + geom_density(aes(color=clarity)) # observamos diferencias en precio por quilate dependiendo de  clarity
+
+
+boxplot(dt9$precio_quilate~dt9$clarity) # cuanto mejor la claridad, mas outliers en precio por quilate - mas observaciones con precio muy alto
+
+by_clarity <- group_by(dt9, clarity)
+pr_med_quil_by_clarity <- summarise(by_clarity, mean(precio_quilate))
+pr_med_quil_by_clarity  # precio medio or quilate es mejor cuanto mejor claridad. Los diamantes con peor claridad muestran precio medio mas bajo. 
+
+.anovaclarity<-aov(dt9$precio_quilate~dt9$clarity)
+summary(.anovaclarity)
+
+#Df    Sum Sq   Mean Sq F value Pr(>F)    
+#dt9$clarity     7 2.941e+09 420158031   112.2 <2e-16 ***
+#  Residuals   51631 1.934e+11   3746289                   
+#---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+# En un análisis anova se confirma influencia fuerte de la claridad del diamante sobre el precio por quiate
+# De todas formas el análisis anova se debe realizar para muestras con distibusion normal y con varianzas guales, por ello voy a comprobar si las varianzas de precio por quilates son iguales en grupos de cada claridad
+
+
+sd_med_quil_by_clarity <- summarise(by_clarity, sd(precio_quilate))
+sd_med_quil_by_clarity  # desviación tipica de precio por quilate tambien crece en cuanto mejora la claridad
+
+library(lawstat)
+levene.test(dt9$precio_quilate, group=dt9$clarity) # test para comprobas si varianzas son iguales
+
+# modified robust Brown-Forsythe Levene-type test based on the absolute deviations from the median
+
+# data:  dt9$precio_quilate
+# Test Statistic = 227.21, p-value < 2.2e-16
+
+
+# bajo nivel de confianza de 95% rechazo la hipotesis Ho de varianzas iguales. Po ello voy a tener que usar Kruskal Wallis test para comparar muestras por claridad.
+
+kruskal.test(precio_quilate ~ clarity, data = dt9)
+
+#Kruskal-Wallis rank sum test
+
+#data:  precio_quilate by clarity
+#Kruskal-Wallis chi-squared = 387.36, df = 7, p-value < 2.2e-16
+
+# bajo nivel de confianza 0.95 rechazo la hipotesis de igualdad de las muestras. Los presios por quilate difieren segun la claridad.
+
+
+
+
+#análisis del peso, color y claridad
+
+library(ggplot2)
+g <- ggplot(dt9, aes(clarity, carat)) 
+g + geom_boxplot(aes(color=color)) # observamos que los diamantes de mejor claridad son en medio mas pequeños, aunque con mas dispersion y outliers en cuanto a peso
+                                   # dentro de la misma categoria de claridad, los diamantes de peor color suelen ser mas grandes
+                                   # conclusion: en media, cuanto mas grande el diamante peor color y claridad, aunque hay bastantes exepciones entre los diamantes grandes              
                     
 
+
+
+#análisis de las variables table, depth y cut
+                
 
 f <- ggplot(dt9, aes(table, depth))
 f + geom_rug(aes(color=cut)) 
@@ -701,42 +754,46 @@ f + geom_point()
 f + geom_point(aes(color=cut))# los diamantes afilados (depth grande) existen de varios tamanos, la forma afilada no es proporcional al tamaño, sin embargo se ven concentraciones de diamantes afilados alrededor de ciertos tamaños determinados.                   
 
 
-
                    
-f <- ggplot(dt9, aes(price, depth))
+f <- ggplot(dt9, aes(precio_quilate, depth))
 f + geom_point() 
 f + geom_point(aes(color=cut))# los diamantes afilados son mas baratos                   
                     
 
-boxplot(dt9$carat~dt9$clarity)
-
-
-.anovacut<-aov(dt9$price~dt9$cut)
+.anovacut<-aov(dt9$pecio_quilate~dt9$cut)
 summary(.anovacut)
 
-.anovadepth<-aov(dt9$precio_quilate~dt9$depth)
-summary(.anovadepth)
+# Df    Sum Sq   Mean Sq F value Pr(>F)    
+# dt9$cut         4 5.448e+09 1.362e+09   117.7 <2e-16 ***
+#  Residuals   51634 5.973e+11 1.157e+07                   
+# ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-.anovadepth<-aov(dt9$price~dt9$depth)
-summary(.anovadepth)
+# En el análisis anova concluimos que el precio por quilate difiere en funcion del corte de los diamantes.
 
-.anovacolor<-aov(dt9$precio_quilate~dt9$color)
-summary(.anovacolor)
 
-.anovacolor<-aov(dt9$price~dt9$color)
-summary(.anovacolor)
+levene.test(dt9$precio_quilate, group=dt9$cut) # test para comprobas si varianzas son iguales
 
-.anovaclarity<-aov(dt9$price~dt9$clarity)
-summary(.anovaclarity)
+#modified robust Brown-Forsythe Levene-type test based on the absolute deviations from the median
 
-.anovadepth<-aov(dt9$depth~dt9$cut)
-summary(.anovadepth)
+#data:  dt9$precio_quilate
+#Test Statistic = 37.326, p-value < 2.2e-16
 
-.anovatable<-aov(dt9$table~dt9$cut)
-summary(.anovatable)
+# Rechazo la hipotesis de de igualdad de varianzas segun el corte
 
-.anovatable<-aov(dt9$precio_quilate~dt9$table)
-summary(.anovatable)
+kruskal.test(precio_quilate ~ cut, data = dt9)
+
+#Kruskal-Wallis rank sum test
+
+#data:  precio_quilate by cut
+#Kruskal-Wallis chi-squared = 198.05, df = 4, p-value < 2.2e-16
+
+# En Kruskal-Wallis test rechazo la hipotesis de igualdad de precios de diamantes con varios tipos ce corte
+
+# conclusiom: existe ciero grupo de diamandes con punta mas afilada, tamanos concentrados alrededor de ciertos valores y precio mas bajo. 
+# Probablemente estos diamantes son de uso industrial (para cortar) mientras que el resto de diamantes tienen uso decorativo (mas proporcionales y mas caros). 
+
+
  #----------------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------- 
 
@@ -750,10 +807,273 @@ Análisis de regresión
 #---------------------------------------------------------------------------------------------------------------- 
 
 
-library(ggplot2)
-dt<-as.data.frame(diamonds)
+# ---------------------------- Modelo de regresion ----------------------------------------
 
-head(dt)
-attach(dt)
+# Seleccion de las variables:
+
+# En el análisis anterior he concluido que la variable mas importante para describir el precio de los diamantes es su tamaño/o peso
+# Las variables relacionadas con el tamaño/peso son: carat, x,y,z. Decido utilizar la variable carat y excluir las variables z,y y z.
+# Otras variables que podrían mejorar el modelo son relacionadas con la forma (proporcionalidad), color y claridad del diamante. 
+# Corte (cut) describe la proporcionalidad y comparte información con las variables depth y table. Elijo para la regresión la variable cut porque su aportacion a describor el precio es mayor.
+# Excluyo las variables table y depth para evitar la multicolinearidad enre las  variables descriptivas.
+
+# Construccion del modelo con el metodo stepwise - forward selection:
+
+# Empiezo construir el modelo introduciendo la variable descripriva de mas peso: carat 
+
+ModeloPriceCarat <- lm(dt9$price~dt9$carat) 
+summary(ModeloPriceCarat)
+
+#Call:
+#  lm(formula = dt9$price ~ dt9$carat)
+
+#Residuals:
+#  Min      1Q  Median      3Q     Max 
+#-8115.7  -772.2   -21.0   517.6 12762.4 
+
+#Coefficients:
+#  Estimate Std. Error t value Pr(>|t|)    
+#(Intercept) -2223.04      13.47  -165.0   <2e-16 ***
+#  dt9$carat    7694.87      15.87   484.9   <2e-16 ***
+#  ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+# Residual standard error: 1450 on 51637 degrees of freedom
+# Multiple R-squared:  0.8199,	Adjusted R-squared:  0.8199 
+# F-statistic: 2.351e+05 on 1 and 51637 DF,  p-value: < 2.2e-16
+
+# Obtengo resultado bastante satisfactorio ya con la primera variable, ya que tiene mucho valor explicativo. R cuadrado de 0.8199 es bastante alto.
+
+# Introduzco la segunda variable (cut) y compruebo y el modelo mejora
+
+ModeloCut <- lm(dt9$price~dt9$carat+dt9$cut) 
+summary(ModeloCut)
+
+#Call:
+#  lm(formula = dt9$price ~ dt9$carat + dt9$cut)
+
+#Residuals:
+#  Min      1Q  Median      3Q     Max 
+#-8162.8  -763.5   -40.5   496.8 12763.8 
+
+#Coefficients:
+#  Estimate Std. Error  t value Pr(>|t|)    
+#(Intercept) -2650.71      16.05 -165.132  < 2e-16 ***
+#  dt9$carat    7815.36      15.78  495.365  < 2e-16 ***
+#  dt9$cut.L    1143.70      27.10   42.201  < 2e-16 ***
+#  dt9$cut.Q    -450.89      23.84  -18.910  < 2e-16 ***
+#  dt9$cut.C     329.52      20.14   16.358  < 2e-16 ***
+#  dt9$cut^4      83.56      15.74    5.309 1.11e-07 ***
+#  ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+#Residual standard error: 1418 on 51633 degrees of freedom
+#Multiple R-squared:  0.8277,	Adjusted R-squared:  0.8277 
+#F-statistic: 4.962e+04 on 5 and 51633 DF,  p-value: < 2.2e-16
+
+# El modelo mejora - R cuadrado ajustado aumenta a 0.8277. P value de F test es muy bajo, por lo cual ambas variables son significativas.
 
 
+ModeloClarity <- lm(dt9$price~dt9$carat+dt9$cut+dt9$clarity) 
+summary(ModeloClarity)
+
+#Call:
+#  lm(formula = dt9$price ~ dt9$carat + dt9$cut + dt9$clarity)
+
+#Residuals:
+#  Min      1Q  Median      3Q     Max 
+#-5918.8  -608.3  -107.5   450.4 11273.1 
+
+#Coefficients:
+#  Estimate Std. Error  t value Pr(>|t|)    
+#(Intercept)   -3041.620     14.702 -206.879  < 2e-16 ***
+#  dt9$carat      8409.043     13.889  605.460  < 2e-16 ***
+#  dt9$cut.L       650.315     23.105   28.146  < 2e-16 ***
+#  dt9$cut.Q      -291.893     20.204  -14.447  < 2e-16 ***
+#  dt9$cut.C       164.785     16.983    9.703  < 2e-16 ***
+#  dt9$cut^4         3.306     13.234    0.250    0.803    
+#dt9$clarity.L  3593.809     33.005  108.888  < 2e-16 ***
+#  dt9$clarity.Q -1382.683     31.271  -44.217  < 2e-16 ***
+#  dt9$clarity.C   541.142     26.678   20.284  < 2e-16 ***
+#  dt9$clarity^4  -167.446     21.126   -7.926 2.31e-15 ***
+#  dt9$clarity^5   124.541     16.995    7.328 2.37e-13 ***
+#  dt9$clarity^6    81.635     14.643    5.575 2.49e-08 ***
+#  dt9$clarity^7   173.244     12.858   13.474  < 2e-16 ***
+#  ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+#Residual standard error: 1190 on 51626 degrees of freedom
+#Multiple R-squared:  0.8788,	Adjusted R-squared:  0.8787 
+#F-statistic: 3.118e+04 on 12 and 51626 DF,  p-value: < 2.2e-16
+
+# Al añadir la variable clarity el modelo vuelve a mejorar: R cuadrada 0.8787. P vaue de F statistic confirma que todas variables descriptivas son significativas.
+
+# Voy a añadir una variable mas: color
+ModeloColor <- lm(dt9$price~dt9$carat+dt9$cut+dt9$clarity+dt9$color) 
+summary(ModeloColor)
+
+
+#Call:
+#  lm(formula = dt9$price ~ dt9$carat + dt9$cut + dt9$clarity + 
+#       dt9$color)
+
+#Residuals:
+#  Min      1Q  Median      3Q     Max 
+#-5521.5  -648.3  -187.2   426.4 10447.0 
+
+#Coefficients:
+#  Estimate Std. Error  t value Pr(>|t|)    
+#(Intercept)   -3517.8313    13.8165 -254.611  < 2e-16 ***
+#  dt9$carat      8776.3887    12.8346  683.807  < 2e-16 ***
+#  dt9$cut.L       624.8734    20.6058   30.325  < 2e-16 ***
+#  dt9$cut.Q      -279.0975    18.0187  -15.489  < 2e-16 ***
+#  dt9$cut.C       154.4745    15.1491   10.197  < 2e-16 ***
+#  dt9$cut^4         0.5148    11.8012    0.044    0.965    
+#  dt9$clarity.L  3758.1169    29.5897  127.008  < 2e-16 ***
+#  dt9$clarity.Q -1361.0026    27.9227  -48.742  < 2e-16 ***
+#  dt9$clarity.C   528.2972    23.7999   22.197  < 2e-16 ***
+#  dt9$clarity^4   -99.3201    18.8582   -5.267 1.39e-07 ***
+#  dt9$clarity^5    85.8790    15.1672    5.662 1.50e-08 ***
+#  dt9$clarity^6    57.1388    13.0594    4.375 1.22e-05 ***
+#  dt9$clarity^7    96.0232    11.4883    8.358  < 2e-16 ***
+#  dt9$color.L   -1875.1258    16.8127 -111.530  < 2e-16 ***
+#  dt9$color.Q    -567.6967    15.5180  -36.583  < 2e-16 ***
+#  dt9$color.C    -117.2685    14.4658   -8.107 5.32e-16 ***
+#  dt9$color^4      71.3576    13.2218    5.397 6.81e-08 ***
+#  dt9$color^5     -61.3624    12.3878   -4.953 7.31e-07 ***
+#  dt9$color^6     -49.1655    11.1427   -4.412 1.02e-05 ***
+#  ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+#Residual standard error: 1061 on 51620 degrees of freedom
+#Multiple R-squared:  0.9036,	Adjusted R-squared:  0.9036 
+#F-statistic: 2.689e+04 on 18 and 51620 DF,  p-value: < 2.2e-16
+
+# Modelo mejora: R cuadrado 0.9036 es bastante bueno y coeficientes son significativas.
+
+#Nota: Modelo con la variable size (x*y*z) en lugar de carat tambien tiene buen resultado, pero no ajusta tan bien como el modelo con carat.
+ModeloSize <- lm(dt9$price~dt9$size+dt9$cut+dt9$clarity+dt9$color) 
+summary(ModeloSize)
+#Residual standard error: 1076 on 51620 degrees of freedom
+#Multiple R-squared:  0.9009,	Adjusted R-squared:  0.9009 
+#F-statistic: 2.607e+04 on 18 and 51620 DF,  p-value: < 2.2e-16
+
+
+#-----------------------  analisis de resuduos ----------------------------------------------------
+
+# Voy a analizar los residuos del modelo con 5 variables
+residuos<-ModeloColor$residuals
+summary(residuos) # la media de los residuos es cero
+
+# Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+# -5521.0  -648.3  -187.2     0.0   426.4 10450.0 
+
+
+plot(residuos)
+
+# los residuos se centran alrededor a cero pero su distribucion no es muy aleatoria
+
+hist(residuos)# la distribucion tiene ligero skew y una pequeña cola derecha
+qqnorm(residuos)
+qqline(residuos, col=2) # la distribucion de los residuos se desvia de la normal en las colas
+
+
+#---------------------------------------transformacion-----------------------------------------------
+
+
+# Voy a aplicar una transformacion logaritmica a las variables de price y carat. De esta forma se 
+
+ModeloLog <- lm(log(dt9$price)~log(dt9$carat)+dt9$cut+dt9$clarity+dt9$color) 
+summary(ModeloLog)
+
+#Call:
+#  lm(formula = log(dt9$price) ~ log(dt9$carat) + dt9$cut + dt9$clarity + 
+#       dt9$color)
+
+#Residuals:
+#  Min       1Q   Median       3Q      Max 
+#-0.68169 -0.08582 -0.00146  0.08105  1.90653 
+
+#Coefficients:
+#  Estimate Std. Error  t value Pr(>|t|)    
+#(Intercept)     8.4665167  0.0012527 6758.772  < 2e-16 ***
+#  log(dt9$carat)  1.8900600  0.0011701 1615.234  < 2e-16 ***
+#  dt9$cut.L       0.1212451  0.0025585   47.389  < 2e-16 ***
+#  dt9$cut.Q      -0.0346185  0.0022361  -15.482  < 2e-16 ***
+#  dt9$cut.C       0.0120292  0.0018794    6.400 1.56e-10 ***
+#  dt9$cut^4      -0.0025479  0.0014644   -1.740   0.0819 .  
+#  dt9$clarity.L   0.8958091  0.0036876  242.924  < 2e-16 ***
+#  dt9$clarity.Q  -0.2174715  0.0034640  -62.780  < 2e-16 ***
+#  dt9$clarity.C   0.1120538  0.0029533   37.941  < 2e-16 ***
+#  dt9$clarity^4  -0.0516316  0.0023400  -22.065  < 2e-16 ***
+#  dt9$clarity^5   0.0197937  0.0018825   10.515  < 2e-16 ***
+#  dt9$clarity^6   0.0002986  0.0016205    0.184   0.8538    
+#  dt9$clarity^7   0.0329326  0.0014256   23.100  < 2e-16 ***
+#  dt9$color.L    -0.4404246  0.0020761 -212.138  < 2e-16 ***
+#  dt9$color.Q    -0.0944644  0.0019253  -49.064  < 2e-16 ***
+#  dt9$color.C    -0.0142708  0.0017950   -7.950 1.90e-15 ***
+#  dt9$color^4     0.0137428  0.0016409    8.375  < 2e-16 ***
+#  dt9$color^5     0.0001100  0.0015374    0.072   0.9430    
+#  dt9$color^6     0.0027159  0.0013827    1.964   0.0495 *  
+#  ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+# Residual standard error: 0.1316 on 51620 degrees of freedom
+# Multiple R-squared:  0.9817,	Adjusted R-squared:  0.9817 
+# F-statistic: 1.535e+05 on 18 and 51620 DF,  p-value: < 2.2e-16
+
+# Despues de la transformacion el modelo ajusta bastante mejor: R cuadrada ajustada de 0.9817 significa que el modelo explica el 98% del precio.
+# F stasistic muestra p valor muy pequeño, confirmando que variables explicativas son significativas (aunque a nivel parcial dos de ellas han perdido signiificancia)
+
+residuos<-ModeloLog$residuals
+plot(residuos) # los residuos  pierden el patron que se ve en el modelo sin logaritmos parecen más aleatorios. 
+
+
+hist(residuos)
+qqnorm(residuos)
+qqline(residuos, col=2) # la distribucion de los residuos es bastante parecida a la normal
+
+
+#----------------------------- coeficientes estandarizados de la regresion ------------------------------------------
+
+
+
+media_dt9<-apply(dt9[,c(1,5:11)],2,mean)                 # calculo la media por variable de las variables continuas
+sd_dt9<-apply(dt9[,c(1,5:11)],2,sd)                      # calculo desviación típica de las variables continuas
+dt9_normal<-scale(dt9[,c(1,5:11)],media_dt9,sd_dt9)      # escalo las variables a la distribución normal N(0,1)
+
+library(dplyr)
+dt10_normal <- cbind(dt9[,c(2:4)], dt9_normal) # junto las variables categoricas
+
+summary(dt10_normal) # voeo que las variables tienen media cero
+
+ModeloTipificado <- lm(log(dt10_normal$price)~log(dt10_normal$carat)+dt10_normal$cut+dt10_normal$clarity+dt10_normal$color)  # construyo el modelo tipifiacado
+summary(ModeloTipificado)
+
+# Obtengo los soguientes coeficientes tipificados
+
+# Coefficients:
+#                         Estimate    Std. Error t value Pr(>|t|)    
+# (Intercept)            -0.375308   0.008793 -42.680  < 2e-16 ***
+#  log(dt10_normal$carat)  1.498243   0.006748 222.030  < 2e-16 ***
+#  dt10_normal$cut.L       0.395384   0.016253  24.327  < 2e-16 ***
+#  dt10_normal$cut.Q      -0.079141   0.014383  -5.502 3.80e-08 ***
+#  dt10_normal$cut.C       0.090094   0.012032   7.488 7.29e-14 ***
+#  dt10_normal$cut^4       0.084346   0.009532   8.849  < 2e-16 ***
+#  dt10_normal$clarity.L   2.493749   0.028939  86.172  < 2e-16 ***
+#  dt10_normal$clarity.Q  -0.836475   0.027369 -30.563  < 2e-16 ***
+#  dt10_normal$clarity.C   0.320188   0.023997  13.343  < 2e-16 ***
+#  dt10_normal$clarity^4  -0.126746   0.020189  -6.278 3.51e-10 ***
+#  dt10_normal$clarity^5   0.013646   0.016739   0.815   0.4149    
+#  dt10_normal$clarity^6   0.033226   0.013726   2.421   0.0155 *  
+#  dt10_normal$clarity^7   0.063822   0.010879   5.866 4.53e-09 ***
+#  dt10_normal$color.L    -1.161917   0.013932 -83.402  < 2e-16 ***
+#  dt10_normal$color.Q    -0.224672   0.012506 -17.965  < 2e-16 ***
+#  dt10_normal$color.C    -0.048722   0.011881  -4.101 4.13e-05 ***
+#  dt10_normal$color^4     0.010901   0.011173   0.976   0.3293    
+#  dt10_normal$color^5     0.025510   0.010345   2.466   0.0137 *  
+#  dt10_normal$color^6     0.008772   0.009335   0.940   0.3473    
+# ---
+#  Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+# Los coeficientes mas significativos son el peso en quilates y clarity L. Las coeficientes menos significativas son color 5-6 y clarity 6-7.
